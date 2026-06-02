@@ -1,1 +1,0 @@
-# tsumutsumu-yakudati
