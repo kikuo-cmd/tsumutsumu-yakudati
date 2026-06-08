@@ -127,6 +127,12 @@
             text-align: center;
         }
 
+        .result-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-weight: bold;
+        }
+
         .result-value {
             font-size: 2.2rem;
             font-weight: 800;
@@ -182,17 +188,16 @@
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // --------------------------------------------------
-        // 【重要】ここにステップ1でコピーしたコピーしたオブジェクトを貼り付けてください
+        // いただいたFirebase設定を組み込みました
         const firebaseConfig = {
             apiKey: "AIzaSyActHR3Vq4QmQdQdBVowlr0dn2Ls0GMCT0",
             authDomain: "tsumutsumu-admin.firebaseapp.com",
-            projectId: "tsumutsumu-admin.firebasestorage.app",
+            projectId: "tsumutsumu-admin",
             storageBucket: "tsumutsumu-admin.firebasestorage.app",
             messagingSenderId: "520621952842",
-            appId: "G-RNR2XLJ1V9"
+            appId: "1:520621952842:web:8e7d1a54e4d3391ad7bbb3",
+            measurementId: "G-RNR2XLJ1V9"
         };
-        // --------------------------------------------------
 
         // Firebaseの初期化
         const app = initializeApp(firebaseConfig);
@@ -235,7 +240,7 @@
     </form>
 </div>
 
-<div class="card" id="loginCard" style="display: none;">
+<div class="card id="loginCard" style="display: none;">
     <h2>管理者ログイン</h2>
     <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group"><label>管理者メールアドレス:</label><input type="email" id="loginEmail" required></div>
@@ -250,7 +255,7 @@
 </div>
 
 <script>
-    // --- 計算ツールのロジック（前回の完全データをそのまま維持） ---
+    // --- 計算ツールのデータとロジック（トレースデータ版） ---
     const correctionHeaders = ['なし','-1','-2','-3','-4','-5','-6','-7','-8','-9','-10','-11','+1','+2','+3','+4','+5','+6','+7','+8','+9','+10','+11','+12','+13','+14','+15','+16','+17','+18','+19','+20'];
     const rawTableData = {
         1:  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],2:  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],3:  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -307,7 +312,7 @@
     // --- ここからFirebase連携ロジック ---
     
     // ログインカードの表示・非表示切り替え
-    function toggleLoginCard() {
+    window.toggleLoginCard = function() {
         const card = document.getElementById('loginCard');
         if (window.fbAuth.currentUser) {
             // すでにログイン中ならログアウト処理
@@ -320,7 +325,7 @@
     }
 
     // ログイン処理
-    function handleLogin(e) {
+    window.handleLogin = function(e) {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPassword').value;
@@ -383,7 +388,7 @@
     });
 
     // ユーザーからのメッセージ送信処理（Firebaseに直接保存）
-    function submitMessage(e) {
+    window.submitMessage = function(e) {
         e.preventDefault();
         const name = document.getElementById('msgName').value;
         const email = document.getElementById('msgEmail').value;
