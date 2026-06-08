@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ツムツム コイン補正判定ツール (管理者機能付き)</title>
+    <title>ツムツム コイン補正総合ポータル</title>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -30,32 +30,77 @@
             box-sizing: border-box;
         }
 
-        /* ヘッダー・ログインボタン用バー */
+        /* ヘッダー・最上部バー */
         .top-bar {
             width: 100%;
-            max-width: 450px;
+            max-width: 800px;
             display: flex;
-            justify-content: flex-end;
-            margin-bottom: 10px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 10px;
+            box-sizing: border-box;
         }
 
-        .nav-btn {
-            background: none;
-            border: 1px solid var(--primary-color);
-            color: var(--primary-color);
-            padding: 6px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.85rem;
+        .site-logo {
+            font-size: 1.1rem;
             font-weight: bold;
-            transition: all 0.2s;
+            color: var(--primary-color);
+            cursor: pointer;
+            text-decoration: none;
         }
 
-        .nav-btn:hover {
-            background-color: var(--primary-color);
-            color: white;
+        /* Windowsのアカウント風丸型ボタン */
+        .account-btn {
+            background-color: #e0e0e0;
+            border: 2px solid transparent;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            padding: 0;
         }
 
+        .account-btn:hover {
+            background-color: #d0d0d0;
+            border-color: var(--primary-color);
+        }
+
+        .account-btn::before {
+            content: "";
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #666;
+            border-radius: 50%;
+            top: 6px;
+        }
+
+        .account-btn::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 10px;
+            background-color: #666;
+            border-radius: 10px 10px 0 0;
+            bottom: 4px;
+        }
+
+        /* メインコンテナ */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 各種カードの基本形 */
         .card {
             background: var(--card-bg);
             border-radius: 12px;
@@ -65,6 +110,12 @@
             max-width: 450px;
             box-sizing: border-box;
             margin-bottom: 20px;
+        }
+
+        /* ホーム画面用の幅広カード */
+        .home-card {
+            max-width: 700px;
+            text-align: center;
         }
 
         h1, h2 {
@@ -77,11 +128,69 @@
             padding-bottom: 10px;
         }
 
-        h2 {
-            font-size: 1.1rem;
-            margin-bottom: 15px;
+        /* メニューボタンの横並びレイアウト (PCで横並び、スマホで縦) */
+        .menu-grid {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+            margin-top: 20px;
+            flex-wrap: wrap;
         }
 
+        .menu-btn {
+            flex: 1;
+            min-width: 200px;
+            max-width: 280px;
+            padding: 25px 20px;
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-btn:hover {
+            border-color: var(--primary-color);
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        }
+
+        .menu-btn-desc {
+            font-size: 0.8rem;
+            color: #6c757d;
+            font-weight: normal;
+        }
+
+        /* 戻るボタン */
+        .back-btn {
+            background: none;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            align-self: flex-start;
+        }
+
+        .back-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* 入力フォーム類の共通スタイル */
         .form-group {
             margin-bottom: 18px;
         }
@@ -153,10 +262,57 @@
             cursor: pointer;
         }
 
-        /* 管理者用メッセージボードのスタイル */
+        /* 画面最前面ポップアップ（モーダル）のスタイル */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            position: relative;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 管理者用メッセージボード */
         .admin-section {
-            display: none; /* 初期状態は非表示 */
             border: 2px solid var(--admin-color);
+            max-width: 700px;
         }
         
         .admin-title {
@@ -172,6 +328,7 @@
             border-radius: 4px;
             margin-bottom: 12px;
             font-size: 0.9rem;
+            text-align: left;
         }
 
         .msg-meta {
@@ -181,6 +338,18 @@
             display: flex;
             justify-content: space-between;
         }
+
+        /* ページの表示切り替え用クラス */
+        .page {
+            display: none;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .page.active {
+            display: flex;
+        }
     </style>
 
     <script type="module">
@@ -188,7 +357,7 @@
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // いただいたFirebase設定を組み込みました
+        // 設定いただいたFirebase設定
         const firebaseConfig = {
             apiKey: "AIzaSyActHR3Vq4QmQdQdBVowlr0dn2Ls0GMCT0",
             authDomain: "tsumutsumu-admin.firebaseapp.com",
@@ -199,12 +368,10 @@
             measurementId: "G-RNR2XLJ1V9"
         };
 
-        // Firebaseの初期化
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // グローバルに使えるようにウィンドウオブジェクトに登録
         window.fbAuth = auth;
         window.fbDb = db;
         window.signInUser = signInWithEmailAndPassword;
@@ -219,43 +386,113 @@
 <body>
 
 <div class="top-bar">
-    <button id="loginNavBtn" class="nav-btn" onclick="toggleLoginCard()">管理者ログイン</button>
+    <div class="site-logo" onclick="showPage('homePage')">🏠 ツムツム補正ツール</div>
+    <button id="loginNavBtn" class="account-btn" onclick="openLoginModal()" title="管理者ログイン"></button>
 </div>
 
-<div class="card">
-    <h1>コイン補正 判定ツール</h1>
-    <div class="form-group"><label>消去数 (1〜45):</label><input type="number" id="inputX" min="1" max="45" value="20"></div>
-    <div class="form-group"><label>消去前のコイン数:</label><input type="number" id="coinBefore" min="0" value="0"></div>
-    <div class="form-group"><label>消去後のコイン数:</label><input type="number" id="coinAfter" min="0" value="80"></div>
-    <div class="result-container"><div class="result-label">判定された補正値</div><span id="resultValue" class="result-value">-</span></div>
+<div class="container">
+
+    <div id="homePage" class="page active">
+        <div class="card home-card">
+            <h1>ツムツム コイン補正判定システム</h1>
+            <p style="color: #6c757d; font-size: 0.95rem;">メニューを選んで選択してください。</p>
+            
+            <div class="menu-grid">
+                <button class="menu-btn" onclick="showPage('toolPage')">
+                    <span>📊 逆算ツール</span>
+                    <span class="menu-btn-desc">消去数から補正値を自動判定</span>
+                </button>
+                <button class="menu-btn" onclick="showPage('contactPage')">
+                    <span>📩 ご意見ボックス</span>
+                    <span class="menu-btn-desc">不具合報告や感想の送信</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toolPage" class="page" style="display: none;">
+        <button class="back-btn" onclick="showPage('homePage')">← ホームへ戻る</button>
+        <div class="card">
+            <h1>コイン補正 判定ツール</h1>
+            <div class="form-group"><label>消去数 (1〜45):</label><input type="number" id="inputX" min="1" max="45" value="20"></div>
+            <div class="form-group"><label>消去前のコイン数:</label><input type="number" id="coinBefore" min="0" value="0"></div>
+            <div class="form-group"><label>消去後のコイン数:</label><input type="number" id="coinAfter" min="0" value="80"></div>
+            <div class="result-container"><div class="result-label">判定された補正値</div><span id="resultValue" class="result-value">-</span></div>
+        </div>
+    </div>
+
+    <div id="contactPage" class="page" style="display: none;">
+        <button class="back-btn" onclick="showPage('homePage')">← ホームへ戻る</button>
+        <div class="card">
+            <h2>制作者へのメッセージ</h2>
+            <form id="contactForm" onsubmit="submitMessage(event)">
+                <div class="form-group"><label>お名前（ニックネーム可）:</label><input type="text" id="msgName" required placeholder="たなか"></div>
+                <div class="form-group"><label>返信用メールアドレス（任意）:</label><input type="email" id="msgEmail" placeholder="example@email.com"></div>
+                <div class="form-group"><label>メッセージ内容:</label><textarea id="msgBody" required placeholder="バグ報告、感想など"></textarea></div>
+                <button type="submit" class="submit-btn">メッセージを送信する</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="adminPage" class="page" style="display: none;">
+        <button class="back-btn" onclick="showPage('homePage')">← ホームへ戻る</button>
+        <div class="card admin-section">
+            <h2 class="admin-title">📥 受信メッセージ一覧（管理者用）</h2>
+            <div id="messageList">メッセージを読み込み中...</div>
+        </div>
+    </div>
+
 </div>
 
-<div class="card" id="contactCard">
-    <h2>制作者へのメッセージ</h2>
-    <form id="contactForm" onsubmit="submitMessage(event)">
-        <div class="form-group"><label>お名前（ニックネーム可）:</label><input type="text" id="msgName" required placeholder="たなか"></div>
-        <div class="form-group"><label>返信用メールアドレス（任意）:</label><input type="email" id="msgEmail" placeholder="example@email.com"></div>
-        <div class="form-group"><label>メッセージ内容:</label><textarea id="msgBody" required placeholder="バグ報告、感想など"></textarea></div>
-        <button type="submit" class="submit-btn">メッセージを送信する</button>
-    </form>
-</div>
-
-<div class="card id="loginCard" style="display: none;">
-    <h2>管理者ログイン</h2>
-    <form id="loginForm" onsubmit="handleLogin(event)">
-        <div class="form-group"><label>管理者メールアドレス:</label><input type="email" id="loginEmail" required></div>
-        <div class="form-group"><label>パスワード:</label><input type="password" id="loginPassword" required></div>
-        <button type="submit" class="submit-btn" style="background-color: var(--admin-color);">ログイン</button>
-    </form>
-</div>
-
-<div class="card admin-section" id="adminCard">
-    <h2 class="admin-title">📥 受信メッセージ一覧（管理者用）</h2>
-    <div id="messageList">メッセージを読み込み中...</div>
+<div class="modal-overlay" id="loginModal" onclick="closeLoginModalOutside(event)">
+    <div class="modal-card">
+        <button class="modal-close" onclick="closeLoginModal()">×</button>
+        <h2>管理者ログイン</h2>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group"><label>管理者メールアドレス:</label><input type="email" id="loginEmail" required></div>
+            <div class="form-group"><label>パスワード:</label><input type="password" id="loginPassword" required></div>
+            <button type="submit" class="submit-btn" style="background-color: var(--admin-color);">ログイン</button>
+        </form>
+    </div>
 </div>
 
 <script>
-    // --- 計算ツールのデータとロジック（トレースデータ版） ---
+    // --- ページ切り替え処理 ---
+    function showPage(pageId) {
+        // すべてのページを一旦非表示に
+        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+        // 対象のページだけを表示
+        document.getElementById(pageId).style.display = 'flex';
+    }
+
+    // --- 最前面ログイン画面（モーダル）の開閉 ---
+    function openLoginModal() {
+        if (window.fbAuth && window.fbAuth.currentUser) {
+            // ログイン中の場合はアイコンクリックでログアウト
+            if(confirm('ログアウトしますか？')) {
+                window.signOutUser(window.fbAuth).then(() => {
+                    alert('ログアウトしました');
+                    showPage('homePage');
+                });
+            }
+        } else {
+            // 未ログインなら最前面に表示
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+    }
+
+    function closeLoginModal() {
+        document.getElementById('loginModal').style.display = 'none';
+        document.getElementById('loginForm').reset();
+    }
+
+    function closeLoginModalOutside(e) {
+        if (e.target.id === 'loginModal') {
+            closeLoginModal();
+        }
+    }
+
+    // --- 計算ツールのロジックデータ ---
     const correctionHeaders = ['なし','-1','-2','-3','-4','-5','-6','-7','-8','-9','-10','-11','+1','+2','+3','+4','+5','+6','+7','+8','+9','+10','+11','+12','+13','+14','+15','+16','+17','+18','+19','+20'];
     const rawTableData = {
         1:  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],2:  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],3:  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -309,37 +546,23 @@
         }
     }
 
-    // --- ここからFirebase連携ロジック ---
-    
-    // ログインカードの表示・非表示切り替え
-    window.toggleLoginCard = function() {
-        const card = document.getElementById('loginCard');
-        if (window.fbAuth.currentUser) {
-            // すでにログイン中ならログアウト処理
-            window.signOutUser(window.fbAuth).then(() => {
-                alert('ログアウトしました');
-            });
-        } else {
-            card.style.display = card.style.display === 'none' ? 'block' : 'none';
-        }
-    }
-
-    // ログイン処理
+    // --- Firebase 認証・ログイン・ログアウト処理 ---
     window.handleLogin = function(e) {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPassword').value;
         window.signInUser(window.fbAuth, email, pass)
             .then(() => {
-                document.getElementById('loginCard').style.display = 'none';
-                document.getElementById('loginForm').reset();
+                closeLoginModal();
+                // ログイン成功時に自動でメッセージ管理ページ（adminPage）へジャンプ
+                showPage('adminPage');
             })
             .catch(err => {
                 alert('ログイン失敗: ' + err.message);
             });
     }
 
-    // ログイン状態の監視（ログインしたら管理者用画面を自動表示）
+    // ログイン状態のリアルタイム監視
     let unsubMessages = null;
     window.addEventListener('load', () => {
         // 計算ツールのイベント登録
@@ -348,16 +571,15 @@
         });
         lookupCorrection();
 
-        // ログイン状態が変わった時の処理
         window.fbAuth.onAuthStateChanged(user => {
-            const adminCard = document.getElementById('adminCard');
             const loginNavBtn = document.getElementById('loginNavBtn');
             
             if (user) {
-                // ログイン成功時
-                adminCard.style.display = 'block';
-                loginNavBtn.innerText = 'ログアウト';
-                // メッセージをリアルタイムに取得
+                // ログイン状態ならアイコンの境界線を緑色に光らせる
+                loginNavBtn.style.borderColor = 'var(--admin-color)';
+                loginNavBtn.title = 'ログアウトする';
+                
+                // リアルタイムにFirebaseからメッセージ一覧を受信
                 const q = window.query(window.collection(window.fbDb, "messages"), window.orderBy("timestamp", "desc"));
                 unsubMessages = window.onSnapshot(q, (snapshot) => {
                     const listDiv = document.getElementById('messageList');
@@ -379,15 +601,15 @@
                     listDiv.innerHTML = html;
                 });
             } else {
-                // ログアウト時
-                adminCard.style.display = 'none';
-                loginNavBtn.innerText = '管理者ログイン';
+                // 未ログイン・ログアウト状態
+                loginNavBtn.style.borderColor = 'transparent';
+                loginNavBtn.title = '管理者ログイン';
                 if (unsubMessages) { unsubMessages(); unsubMessages = null; }
             }
         });
     });
 
-    // ユーザーからのメッセージ送信処理（Firebaseに直接保存）
+    // メッセージ送信処理
     window.submitMessage = function(e) {
         e.preventDefault();
         const name = document.getElementById('msgName').value;
@@ -398,16 +620,16 @@
             name: name,
             email: email,
             message: message,
-            timestamp: new Date() // 現在時刻
+            timestamp: new Date()
         }).then(() => {
             alert('メッセージを送信しました！ありがとうございます。');
             document.getElementById('contactForm').reset();
+            showPage('homePage'); // 送信後に自動でホームへ戻る
         }).catch(err => {
             alert('送信に失敗しました: ' + err.message);
         });
     }
 
-    // エスケープ処理（セキュリティ対策）
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
