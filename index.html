@@ -128,7 +128,39 @@
             padding-bottom: 10px;
         }
 
-        /* メニューボタンの横並びレイアウト (PCで横並び、スマホで縦) */
+        /* 📢 お知らせボードのスタイル */
+        .notice-board {
+            background: #fff;
+            border-left: 5px solid var(--focus-color);
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            text-align: left;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .notice-title {
+            font-weight: bold;
+            color: var(--focus-color);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .notice-item {
+            font-size: 0.95rem;
+            border-bottom: 1px dashed #eee;
+            padding: 8px 0;
+        }
+        .notice-item:last-child {
+            border-bottom: none;
+        }
+        .notice-date {
+            font-size: 0.75rem;
+            color: #868e96;
+            margin-left: 10px;
+        }
+
+        /* メニューボタンの横並びレイアウト */
         .menu-grid {
             display: flex;
             gap: 20px;
@@ -262,7 +294,7 @@
             cursor: pointer;
         }
 
-        /* 画面最前面ポップアップ（モーダル）のスタイル */
+        /* 画面最前面ポップアップ（モーダル） */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -309,7 +341,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 管理者用メッセージボード */
+        /* 管理者用セクション */
         .admin-section {
             border: 2px solid var(--admin-color);
             max-width: 700px;
@@ -339,7 +371,7 @@
             justify-content: space-between;
         }
 
-        /* ページの表示切り替え用クラス */
+        /* ページの表示切り替え用 */
         .page {
             display: none;
             width: 100%;
@@ -355,7 +387,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // 設定いただいたFirebase設定
         const firebaseConfig = {
@@ -381,6 +413,7 @@
         window.query = query;
         window.orderBy = orderBy;
         window.onSnapshot = onSnapshot;
+        window.limit = limit;
     </script>
 </head>
 <body>
@@ -395,6 +428,12 @@
     <div id="homePage" class="page active">
         <div class="card home-card">
             <h1>ツムツム コイン補正判定システム</h1>
+            
+            <div class="notice-board" id="userNoticeBoard" style="display: none;">
+                <div class="notice-title">📢 お知らせ</div>
+                <div id="userNoticeList">お知らせを読み込み中...</div>
+            </div>
+
             <p style="color: #6c757d; font-size: 0.95rem;">メニューを選んで選択してください。</p>
             
             <div class="menu-grid">
@@ -436,8 +475,20 @@
 
     <div id="adminPage" class="page" style="display: none;">
         <button class="back-btn" onclick="showPage('homePage')">← ホームへ戻る</button>
+        
+        <div class="card admin-section" style="margin-bottom: 20px;">
+            <h2 class="admin-title">📝 新しいお知らせを投稿</h2>
+            <form id="noticeForm" onsubmit="submitNotice(event)">
+                <div class="form-group">
+                    <label>お知らせ内容:</label>
+                    <textarea id="noticeBody" required placeholder="例：新ツムのデータを反映しました！、不具合を修正しました。"></textarea>
+                </div>
+                <button type="submit" class="submit-btn" style="background-color: var(--admin-color);">お知らせを公開する</button>
+            </form>
+        </div>
+
         <div class="card admin-section">
-            <h2 class="admin-title">📥 受信メッセージ一覧（管理者用）</h2>
+            <h2 class="admin-title">📥 受信メッセージ一覧</h2>
             <div id="messageList">メッセージを読み込み中...</div>
         </div>
     </div>
@@ -459,16 +510,13 @@
 <script>
     // --- ページ切り替え処理 ---
     function showPage(pageId) {
-        // すべてのページを一旦非表示に
         document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-        // 対象のページだけを表示
         document.getElementById(pageId).style.display = 'flex';
     }
 
     // --- 最前面ログイン画面（モーダル）の開閉 ---
     function openLoginModal() {
         if (window.fbAuth && window.fbAuth.currentUser) {
-            // ログイン中の場合はアイコンクリックでログアウト
             if(confirm('ログアウトしますか？')) {
                 window.signOutUser(window.fbAuth).then(() => {
                     alert('ログアウトしました');
@@ -476,7 +524,6 @@
                 });
             }
         } else {
-            // 未ログインなら最前面に表示
             document.getElementById('loginModal').style.display = 'flex';
         }
     }
@@ -546,7 +593,7 @@
         }
     }
 
-    // --- Firebase 認証・ログイン・ログアウト処理 ---
+    // --- Firebase 認証・ログイン処理 ---
     window.handleLogin = function(e) {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
@@ -554,7 +601,6 @@
         window.signInUser(window.fbAuth, email, pass)
             .then(() => {
                 closeLoginModal();
-                // ログイン成功時に自動でメッセージ管理ページ（adminPage）へジャンプ
                 showPage('adminPage');
             })
             .catch(err => {
@@ -562,24 +608,46 @@
             });
     }
 
-    // ログイン状態のリアルタイム監視
+    // ログイン状態および一般お知らせのリアルタイム監視
     let unsubMessages = null;
     window.addEventListener('load', () => {
-        // 計算ツールのイベント登録
         ['inputX', 'coinBefore', 'coinAfter'].forEach(id => {
             document.getElementById(id).addEventListener('input', lookupCorrection);
         });
         lookupCorrection();
 
+        // 📢 【全ユーザー共通】最新のお知らせを3件取得してホーム画面に表示
+        const nq = window.query(window.collection(window.fbDb, "notices"), window.orderBy("timestamp", "desc"), window.limit(3));
+        window.onSnapshot(nq, (snapshot) => {
+            const board = document.getElementById('userNoticeBoard');
+            const listDiv = document.getElementById('userNoticeList');
+            if (snapshot.empty) {
+                board.style.display = 'none';
+                return;
+            }
+            board.style.display = 'block';
+            let html = '';
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const date = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleDateString() : '';
+                html += `
+                    <div class="notice-item">
+                        <span>${escapeHtml(data.content)}</span><span class="notice-date">${date}</span>
+                    </div>
+                `;
+            });
+            listDiv.innerHTML = html;
+        });
+
+        // 🔐 管理者ログイン状態の監視
         window.fbAuth.onAuthStateChanged(user => {
             const loginNavBtn = document.getElementById('loginNavBtn');
             
             if (user) {
-                // ログイン状態ならアイコンの境界線を緑色に光らせる
                 loginNavBtn.style.borderColor = 'var(--admin-color)';
                 loginNavBtn.title = 'ログアウトする';
                 
-                // リアルタイムにFirebaseからメッセージ一覧を受信
+                // 管理者用：メッセージ受信リストの取得
                 const q = window.query(window.collection(window.fbDb, "messages"), window.orderBy("timestamp", "desc"));
                 unsubMessages = window.onSnapshot(q, (snapshot) => {
                     const listDiv = document.getElementById('messageList');
@@ -601,7 +669,6 @@
                     listDiv.innerHTML = html;
                 });
             } else {
-                // 未ログイン・ログアウト状態
                 loginNavBtn.style.borderColor = 'transparent';
                 loginNavBtn.title = '管理者ログイン';
                 if (unsubMessages) { unsubMessages(); unsubMessages = null; }
@@ -609,7 +676,7 @@
         });
     });
 
-    // メッセージ送信処理
+    // 📩 ユーザーからのメッセージ送信処理
     window.submitMessage = function(e) {
         e.preventDefault();
         const name = document.getElementById('msgName').value;
@@ -624,9 +691,25 @@
         }).then(() => {
             alert('メッセージを送信しました！ありがとうございます。');
             document.getElementById('contactForm').reset();
-            showPage('homePage'); // 送信後に自動でホームへ戻る
+            showPage('homePage');
         }).catch(err => {
             alert('送信に失敗しました: ' + err.message);
+        });
+    }
+
+    // 📢 【管理者専用】お知らせの投稿処理
+    window.submitNotice = function(e) {
+        e.preventDefault();
+        const content = document.getElementById('noticeBody').value;
+
+        window.addDoc(window.collection(window.fbDb, "notices"), {
+            content: content,
+            timestamp: new Date()
+        }).then(() => {
+            alert('お知らせを公開しました！');
+            document.getElementById('noticeForm').reset();
+        }).catch(err => {
+            alert('お知らせの公開に失敗しました: ' + err.message);
         });
     }
 
