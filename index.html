@@ -191,4 +191,555 @@
         }
 
         .menu-btn:hover {
-            border-color: var(--primary-color
+            border-color: var(--primary-color);
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        }
+
+        .menu-btn.admin-only-btn {
+            border-color: var(--admin-color);
+            color: var(--admin-color);
+        }
+        .menu-btn.admin-only-btn:hover {
+            background-color: #eef9f2;
+            border-color: var(--admin-color);
+        }
+
+        .menu-btn-desc {
+            font-size: 0.8rem;
+            color: #6c757d;
+            font-weight: normal;
+        }
+
+        /* 戻るボタン */
+        .back-btn {
+            background: none;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            align-self: flex-start;
+        }
+
+        .back-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* 入力フォーム類 */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input[type="number"], input[type="text"], input[type="email"], input[type="password"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1.1rem;
+            box-sizing: border-box;
+            background-color: #f8f9fa;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        textarea {
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--focus-color);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+        }
+
+        .result-container {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            border: 1px dashed var(--border-color);
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-weight: bold;
+        }
+
+        .result-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            display: block;
+            margin-top: 5px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* 画面最前面ポップアップ（モーダル） */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            position: relative;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 管理者用セクション */
+        .admin-section {
+            border: 2px solid var(--admin-color);
+            max-width: 700px;
+        }
+        
+        .admin-title {
+            color: var(--admin-color);
+            border-bottom-color: #e2f4e9;
+        }
+
+        .msg-item {
+            background: #fdfdfd;
+            border: 1px solid #e9ecef;
+            border-left: 4px solid var(--admin-color);
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        .msg-meta {
+            font-size: 0.75rem;
+            color: #868e96;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* ページの表示切り替え用 */
+        .page {
+            display: none;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .page.active {
+            display: flex;
+        }
+    </style>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyActHR3Vq4QmQdQdBVowlr0dn2Ls0GMCT0",
+            authDomain: "tsumutsumu-admin.firebaseapp.com",
+            projectId: "tsumutsumu-admin",
+            storageBucket: "tsumutsumu-admin.firebasestorage.app",
+            messagingSenderId: "520621952842",
+            appId: "1:520621952842:web:8e7d1a54e4d3391ad7bbb3",
+            measurementId: "G-RNR2XLJ1V9"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.fbAuth = auth;
+        window.fbDb = db;
+        window.signInUser = signInWithEmailAndPassword;
+        window.signOutUser = signOut;
+        window.addDoc = addDoc;
+        window.collection = collection;
+        window.query = query;
+        window.orderBy = orderBy;
+        window.onSnapshot = onSnapshot;
+        window.limit = limit;
+    </script>
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="site-logo" onclick="showPage('homePage')">🏠 ツムツム補正ツール</div>
+    <button id="loginNavBtn" class="account-btn" onclick="openLoginModal()" title="管理者ログイン"></button>
+</div>
+
+<div class="container">
+
+    <div id="homePage" class="page active">
+        <div class="card home-card">
+            <h1>ツムツム コイン補正判定システム</h1>
+            
+            <div class="notice-board" id="userNoticeBoard" style="display: none;">
+                <div class="notice-title">📢 お知らせ</div>
+                <div id="userNoticeList">お知らせを読み込み中...</div>
+            </div>
+
+            <p style="color: #6c757d; font-size: 0.95rem;">メニューを選んで選択してください。</p>
+            
+            <div class="menu-grid">
+                <button class="menu-btn" onclick="showPage('toolPage')">
+                    <span>📊 逆算ツール</span>
+                    <span class="menu-btn-desc">消去数から補正値を自動判定</span>
+                </button>
+                <button class="menu-btn" onclick="showPage('contactPage')">
+                    <span>📩 ご意見ボックス</span>
+                    <span class="menu-btn-desc">不具合報告や感想の送信</span>
+                </button>
+                <button class="menu-btn admin-only-btn" id="homeAdminBtn" onclick="showPage('adminPage')" style="display: none;">
+                    <span>🛠️ 管理ツール</span>
+                    <span class="menu-btn-desc">お知らせ投稿・お問合せ確認</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toolPage" class="page" style="display: none;">
+        <button class="back-btn" onclick="showPage('homePage')">← ホームへ戻る</button>
+        <div class="card">
+            <h1>コイン補正 判定ツール</h1>
+            <div class="form-group"><label>消去数 (1〜45):</label><input type="number" id="inputX" min="1" max="45" value="20"></div>
+            <div class="form-group"><label>消去前のコイン数:</label><input type="number" id="coinBefore" min="0" value="0"></div>
+            <div class="form-group"><label>消去後のコイン数:</label><input type="number" id="coinAfter" min="0" value="80"></div>
+            <div class="result-container"><div class="result-label">判定された補正値</div><span id="resultValue" class="result-value">-</span></div>
+        </div>
+    </div>
+
+    <div id="contactPage" class="page" style="display: none;">
+        <button class="back-btn" onclick="showPage('homePage')">← ホームへ戻る</button>
+        <div class="card">
+            <h2>制作者へのメッセージ</h2>
+            <form id="contactForm" onsubmit="submitMessage(event)">
+                <div class="form-group"><label>お名前（ニックネーム可）:</label><input type="text" id="msgName" required placeholder="たなか"></div>
+                <div class="form-group"><label>返信用メールアドレス（任意）:</label><input type="email" id="msgEmail" placeholder="example@email.com"></div>
+                <div class="form-group"><label>メッセージ内容:</label><textarea id="msgBody" required placeholder="バグ報告、感想など"></textarea></div>
+                <button type="submit" class="submit-btn">メッセージを送信する</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="adminPage" class="page" style="display: none;">
+        <button class="back-btn" onclick="showPage('homePage')">← ホームへ戻る</button>
+        
+        <div class="card admin-section" style="margin-bottom: 20px;">
+            <h2 class="admin-title">📝 新しいお知らせを投稿</h2>
+            <form id="noticeForm" onsubmit="submitNotice(event)">
+                <div class="form-group">
+                    <label>お知らせ内容:</label>
+                    <textarea id="noticeBody" required placeholder="例：新ツムのデータを反映しました！"></textarea>
+                </div>
+                <button type="submit" class="submit-btn" style="background-color: var(--admin-color);">お知らせを公開する</button>
+            </form>
+        </div>
+
+        <div class="card admin-section">
+            <h2 class="admin-title">📥 受信メッセージ一覧</h2>
+            <div id="messageList">メッセージを読み込み中...</div>
+        </div>
+    </div>
+
+</div>
+
+<div class="modal-overlay" id="loginModal" onclick="closeLoginModalOutside(event)">
+    <div class="modal-card">
+        <button class="modal-close" onclick="closeLoginModal()">×</button>
+        <h2>管理者ログイン</h2>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group"><label>管理者メールアドレス:</label><input type="email" id="loginEmail" required></div>
+            <div class="form-group"><label>パスワード:</label><input type="password" id="loginPassword" required></div>
+            <button type="submit" class="submit-btn" style="background-color: var(--admin-color);">ログイン</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // --- ページ切り替え処理 ---
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+        document.getElementById(pageId).style.display = 'flex';
+    }
+
+    // --- 最前面ログイン画面（モーダル）の開閉 ---
+    function openLoginModal() {
+        if (window.fbAuth && window.fbAuth.currentUser) {
+            if(confirm('ログアウトしますか？')) {
+                window.signOutUser(window.fbAuth).then(() => {
+                    alert('ログアウトしました');
+                    showPage('homePage');
+                });
+            }
+        } else {
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+    }
+
+    function closeLoginModal() {
+        document.getElementById('loginModal').style.display = 'none';
+        document.getElementById('loginForm').reset();
+    }
+
+    function closeLoginModalOutside(e) {
+        if (e.target.id === 'loginModal') {
+            closeLoginModal();
+        }
+    }
+
+    // --- 計算ツールのロジックデータ ---
+    const correctionHeaders = ['なし','-1','-2','-3','-4','-5','-6','-7','-8','-9','-10','-11','+1','+2','+3','+4','+5','+6','+7','+8','+9','+10','+11','+12','+13','+14','+15','+16','+17','+18','+19','+20'];
+    const rawTableData = {
+        1:  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],2:  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],3:  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        4:  [1,1,1,1,1,1,1,1,1,1,1,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],5:  [3,2,2,2,2,2,2,2,2,2,2,2,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43],
+        6:  [5,3,3,3,3,3,3,3,3,3,3,3,8,11,14,17,20,23,26,29,32,35,38,41,44,47,50,53,56,59,62,65],7:  [7,4,4,4,4,4,4,4,4,4,4,4,11,15,19,23,27,31,35,39,43,47,51,55,59,63,67,71,75,79,83,87],
+        8:  [10,6,5,5,5,5,5,5,5,5,5,5,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110],9:  [13,8,6,6,6,6,6,6,6,6,6,6,19,25,31,37,43,49,55,61,67,73,79,85,91,97,103,109,115,121,127,133],
+        10: [16,10,7,7,7,7,7,7,7,7,7,7,23,30,37,44,51,58,65,72,79,86,93,100,107,114,121,128,135,142,149,156],11: [21,14,10,9,8,8,8,8,8,8,8,8,29,37,45,53,61,69,77,85,93,101,109,117,125,133,141,149,157,165,173,181],
+        12: [26,18,13,11,9,9,9,9,9,9,9,9,35,44,53,62,71,80,89,98,107,116,125,134,143,152,161,170,179,188,197,206],13: [31,22,16,13,10,10,10,10,10,10,10,10,41,51,61,71,81,91,101,111,121,131,141,151,161,171,181,191,201,211,221,231],
+        14: [36,26,19,15,11,11,11,11,11,11,11,11,47,58,69,80,91,102,113,124,135,146,157,168,179,190,201,212,223,234,245,256],15: [46,35,27,22,17,16,15,14,13,12,12,12,58,70,82,94,106,118,130,142,154,166,178,190,202,214,226,238,250,262,274,286],
+        16: [56,44,35,29,23,21,19,17,15,13,13,13,69,82,95,108,121,134,147,160,173,186,199,212,225,238,251,264,277,290,303,316],17: [66,53,43,36,29,26,23,20,17,14,14,14,80,94,108,122,136,150,164,178,192,206,220,234,248,262,276,290,304,318,332,346],
+        18: [76,62,51,43,35,31,27,23,19,15,15,15,91,106,121,136,151,166,181,196,211,226,241,256,271,286,301,316,331,346,361,376],19: [86,71,59,50,41,36,31,26,21,16,16,16,102,118,134,150,166,182,198,214,230,246,262,278,294,310,326,342,358,374,390,406],
+        20: [96,80,67,57,47,41,35,29,23,17,17,17,113,130,147,164,181,198,215,232,249,266,283,300,317,334,351,368,385,402,419,436],21: [106,89,75,64,53,46,39,32,25,18,18,18,124,142,160,178,196,214,232,250,268,286,304,322,340,358,376,394,412,430,448,466],
+        22: [116,98,83,71,59,51,43,35,27,19,19,19,135,154,173,192,211,230,249,268,287,306,325,344,363,382,401,420,439,458,477,496],23: [126,107,91,78,65,56,47,38,29,20,20,20,146,166,186,206,226,246,266,286,306,326,346,366,386,406,426,446,466,486,506,526],
+        24: [136,116,99,85,71,61,51,41,31,21,21,21,157,178,199,220,241,262,283,304,325,346,367,388,409,430,451,472,493,514,535,556],25: [146,125,107,92,77,66,55,44,33,22,22,22,168,190,212,234,256,278,300,322,344,366,388,410,432,454,476,498,520,542,564,586],
+        26: [156,134,115,99,83,71,59,47,35,23,23,23,179,202,225,248,271,294,317,340,363,386,409,432,455,478,501,524,547,570,593,616],27: [166,143,123,106,89,76,63,50,37,24,24,24,190,214,238,262,286,310,334,358,382,406,430,454,478,502,526,550,574,598,622,646],
+        28: [176,152,131,113,95,81,67,53,39,25,25,25,201,226,251,276,301,326,351,376,401,426,451,476,501,526,551,576,601,626,651,676],29: [186,161,139,120,101,86,71,56,41,26,26,26,212,238,264,290,316,342,368,394,420,446,472,498,524,550,576,602,628,654,680,706],
+        30: [198,172,149,129,109,93,77,61,45,29,28,27,225,252,279,306,333,360,387,414,441,468,495,522,549,576,603,630,657,684,711,738],31: [210,183,159,138,117,100,83,66,49,32,30,28,238,266,294,322,350,378,406,434,462,490,518,546,574,602,630,658,686,714,742,770],
+        32: [222,194,169,147,125,107,89,71,53,35,32,29,251,280,309,338,367,396,425,454,483,512,541,570,599,628,657,686,715,744,773,802],33: [234,205,179,156,133,114,95,76,57,38,34,30,264,294,324,354,384,414,444,474,504,534,564,594,624,654,684,714,744,774,804,834],
+        34: [246,216,189,165,141,121,101,81,61,41,36,31,277,308,339,370,401,432,463,494,525,556,587,618,649,680,711,742,773,804,835,866],35: [258,227,199,174,149,128,107,86,65,44,38,32,290,322,354,386,418,450,482,514,546,578,610,642,674,706,738,770,802,834,866,898],
+        36: [270,238,209,183,157,135,113,91,69,47,40,33,303,336,369,402,435,468,501,534,567,600,633,666,699,732,765,798,831,864,897,930],37: [282,249,219,192,165,142,119,96,73,50,42,34,316,350,384,418,452,486,520,554,588,622,656,690,724,758,792,826,860,894,928,962],
+        38: [294,260,229,201,173,149,125,101,77,53,44,35,329,364,399,434,469,504,539,574,609,644,679,714,749,784,819,854,889,924,959,994],
+        39: [306,271,239,210,181,156,131,106,81,56,46,36,342,378,414,450,486,522,558,594,630,666,702,738,774,810,846,882,918,954,990,1026],40: [318,282,249,219,189,163,137,111,85,59,48,37,355,392,429,466,503,540,577,614,651,688,725,762,799,836,873,910,947,984,1021,1058],
+        41: [330,293,259,228,197,170,143,116,89,62,50,38,368,406,444,482,520,558,596,634,672,710,748,786,824,862,900,938,976,1014,1052,1090],42: [342,304,269,237,205,177,149,121,93,65,52,39,381,420,459,498,537,576,615,654,693,732,771,810,849,888,927,966,1005,1044,1083,1122],
+        43: [354,315,279,246,213,184,155,126,97,68,54,40,394,434,474,514,554,594,634,674,714,754,794,834,874,914,954,994,1034,1074,1114,1154],44: [366,326,289,255,221,191,161,131,101,71,56,41,407,448,489,530,571,612,653,694,735,776,817,858,899,940,981,1022,1063,1104,1145,1186],
+        45: [378,337,299,264,229,198,167,136,105,74,58,42,420,462,504,546,588,630,672,714,756,798,840,882,924,966,1008,1050,1092,1134,1176,1218]
+    };
+
+    function lookupCorrection() {
+        const x = parseInt(document.getElementById('inputX').value);
+        const before = parseInt(document.getElementById('coinBefore').value);
+        const after = parseInt(document.getElementById('coinAfter').value);
+        const resultSpan = document.getElementById('resultValue');
+        if (isNaN(x) || isNaN(before) || isNaN(after)) { resultSpan.innerText = '-'; return; }
+        const targetCoins = after - before;
+        if (targetCoins < 0) { resultSpan.innerText = '入力エラー'; return; }
+        const rowData = rawTableData[x];
+        if (!rowData) { resultSpan.innerText = '範囲外'; return; }
+        let bestIndex = null, minDiff = Infinity;
+        for (let i = 0; i < rowData.length; i++) {
+            const diff = Math.abs(rowData[i] - targetCoins);
+            if (diff < minDiff) { minDiff = diff; bestIndex = i; }
+        }
+        if (bestIndex !== null) {
+            let matchedHeader = correctionHeaders[bestIndex];
+            let displayText = matchedHeader === 'なし' ? '補正 なし' : '補正 ' + matchedHeader;
+            if (targetCoins === 0 && rowData[bestIndex] === 0) {
+                let matchCount = rowData.filter(v => v === 0).length;
+                if (matchCount > 1) displayText = '判定不可 (0枚重複)';
+            } else if (minDiff !== 0) { displayText += ' *'; }
+            resultSpan.innerText = displayText;
+        }
+    }
+
+    // --- Firebase 認証・ログイン処理 ---
+    window.handleLogin = function(e) {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPassword').value;
+        window.signInUser(window.fbAuth, email, pass)
+            .then(() => {
+                closeLoginModal();
+                showPage('adminPage');
+            })
+            .catch(err => {
+                alert('ログイン失敗: ' + err.message);
+            });
+    }
+
+    // 状態のリアルタイム監視
+    let unsubMessages = null;
+    window.addEventListener('load', () => {
+        ['inputX', 'coinBefore', 'coinAfter'].forEach(id => {
+            document.getElementById(id).addEventListener('input', lookupCorrection);
+        });
+        lookupCorrection();
+
+        // 📢 【全ユーザー共通】最新のお知らせを3件取得してホーム画面に表示
+        const nq = window.query(window.collection(window.fbDb, "notices"), window.orderBy("timestamp", "desc"), window.limit(3));
+        window.onSnapshot(nq, (snapshot) => {
+            const board = document.getElementById('userNoticeBoard');
+            const listDiv = document.getElementById('userNoticeList');
+            if (snapshot.empty) {
+                board.style.display = 'none';
+                return;
+            }
+            board.style.display = 'block';
+            let html = '';
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const date = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleDateString() : '';
+                html += `
+                    <div class="notice-item">
+                        <span>${escapeHtml(data.content)}</span><span class="notice-date">${date}</span>
+                    </div>
+                `;
+            });
+            listDiv.innerHTML = html;
+        });
+
+        // 🔐 管理者ログイン状態の監視（常に監視し続ける）
+        window.fbAuth.onAuthStateChanged(user => {
+            const loginNavBtn = document.getElementById('loginNavBtn');
+            const homeAdminBtn = document.getElementById('homeAdminBtn');
+            
+            if (user) {
+                loginNavBtn.style.borderColor = 'var(--admin-color)';
+                loginNavBtn.title = 'ログアウトする';
+                
+                // 🔐 ログイン中なら、ホーム画面の「管理ツール」ボタンを出現させる
+                if(homeAdminBtn) homeAdminBtn.style.display = 'flex';
+                
+                // メッセージ取得リスナーが未接続なら接続する
+                if (!unsubMessages) {
+                    const q = window.query(window.collection(window.fbDb, "messages"), window.orderBy("timestamp", "desc"));
+                    unsubMessages = window.onSnapshot(q, (snapshot) => {
+                        const listDiv = document.getElementById('messageList');
+                        if (snapshot.empty) {
+                            listDiv.innerText = '届いているメッセージはありません。';
+                            return;
+                        }
+                        let html = '';
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            const date = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : '送信中...';
+                            html += `
+                                <div class="msg-item">
+                                    <div class="msg-meta"><span>👤 ${escapeHtml(data.name)} (${escapeHtml(data.email || 'メールなし')})</span><span>⏱ ${date}</span></div>
+                                    <div style="white-space:pre-wrap;">${escapeHtml(data.message)}</div>
+                                </div>
+                            `;
+                        });
+                        listDiv.innerHTML = html;
+                    });
+                }
+            } else {
+                // ログアウト状態
+                loginNavBtn.style.borderColor = 'transparent';
+                loginNavBtn.title = '管理者ログイン';
+                
+                // 🔐 ログアウト中なら、ホーム画面の「管理ツール」ボタンを隠す
+                if(homeAdminBtn) homeAdminBtn.style.display = 'none';
+                
+                if (unsubMessages) { unsubMessages(); unsubMessages = null; }
+            }
+        });
+    });
+
+    // 📩 ユーザーからのメッセージ送信処理
+    window.submitMessage = function(e) {
+        e.preventDefault();
+        const name = document.getElementById('msgName').value;
+        const email = document.getElementById('msgEmail').value;
+        const message = document.getElementById('msgBody').value;
+
+        window.addDoc(window.collection(window.fbDb, "messages"), {
+            name: name,
+            email: email,
+            message: message,
+            timestamp: new Date()
+        }).then(() => {
+            alert('メッセージを送信しました！ありがとうございます。');
+            document.getElementById('contactForm').reset();
+            showPage('homePage');
+        }).catch(err => {
+            alert('送信に失敗しました: ' + err.message);
+        });
+    }
+
+    // 📢 【管理者専用】お知らせの投稿処理
+    window.submitNotice = function(e) {
+        e.preventDefault();
+        const content = document.getElementById('noticeBody').value;
+
+        window.addDoc(window.collection(window.fbDb, "notices"), {
+            content: content,
+            timestamp: new Date()
+        }).then(() => {
+            alert('お知らせを公開しました！');
+            document.getElementById('noticeForm').reset();
+        }).catch(err => {
+            alert('お知らせの公開に失敗しました: ' + err.message);
+        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+</script>
+</body>
+</html>
