@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ツムツム コイン補正総合ポータル</title>
+    <title>ツムツム コイン補正＆ガチャ総合ポータル</title>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -14,6 +14,7 @@
             --accent-color: #e63946;
             --focus-color: #4a90e2;
             --admin-color: #27ae60;
+            --gacha-color: #9b59b6;
         }
 
         body {
@@ -50,7 +51,7 @@
             text-decoration: none;
         }
 
-        /* Windowsのアカウント風丸型ボタン */
+        /* 丸型アカウントボタン */
         .account-btn {
             background-color: #e0e0e0;
             border: 2px solid transparent;
@@ -100,25 +101,25 @@
             align-items: center;
         }
 
-        /* 各種カードの基本形 */
+        /* カード基本形 */
         .card {
             background: var(--card-bg);
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
             padding: 25px;
             width: 100%;
-            max-width: 450px;
+            max-width: 500px;
             box-sizing: border-box;
             margin-bottom: 20px;
         }
 
-        /* ホーム画面用の幅広カード */
+        /* ホーム画面用カード */
         .home-card {
             max-width: 800px;
             text-align: center;
         }
 
-        h1, h2 {
+        h1, h2, h3 {
             font-size: 1.4rem;
             color: var(--primary-color);
             margin-top: 0;
@@ -126,6 +127,15 @@
             text-align: center;
             border-bottom: 2px solid #e9ecef;
             padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            border-bottom: 1px solid #eee;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            text-align: left;
         }
 
         /* 📢 お知らせボード */
@@ -160,7 +170,7 @@
             margin-left: 10px;
         }
 
-        /* メニューボタンの横並びレイアウト */
+        /* メニューグリッド */
         .menu-grid {
             display: flex;
             gap: 15px;
@@ -172,7 +182,7 @@
 
         .menu-btn {
             flex: 1;
-            min-width: 180px;
+            min-width: 200px;
             max-width: 240px;
             padding: 25px 15px;
             background-color: var(--card-bg);
@@ -203,7 +213,6 @@
         }
         .menu-btn.admin-only-btn:hover {
             background-color: #eef9f2;
-            border-color: var(--admin-color);
         }
 
         .menu-btn-desc {
@@ -231,7 +240,7 @@
             color: white;
         }
 
-        /* 入力フォーム類 */
+        /* 入力フォーム、ボタン */
         .form-group {
             margin-bottom: 18px;
         }
@@ -268,6 +277,32 @@
             box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
         }
 
+        /* 確率プリセット用チップス */
+        .preset-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .preset-btn {
+            background-color: #e9ecef;
+            border: 1px solid #dee2e6;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover {
+            background-color: var(--gacha-color);
+            color: white;
+            border-color: var(--gacha-color);
+        }
+
         .result-container {
             margin-top: 25px;
             padding: 20px;
@@ -301,9 +336,10 @@
             font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
+            margin-bottom: 10px;
         }
 
-        /* 画面最前面ポップアップ（モーダル） */
+        /* ポップアップモーダル */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -341,56 +377,26 @@
             color: #aaa;
         }
 
-        .modal-close:hover {
-            color: #333;
-        }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 管理者用セクション */
+        /* 管理者用 */
         .admin-section {
             border: 2px solid var(--admin-color);
             max-width: 700px;
         }
-        
-        .admin-title {
-            color: var(--admin-color);
-            border-bottom-color: #e2f4e9;
-        }
-
+        .admin-title { color: var(--admin-color); border-bottom-color: #e2f4e9; }
         .msg-item {
-            background: #fdfdfd;
-            border: 1px solid #e9ecef;
-            border-left: 4px solid var(--admin-color);
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 12px;
-            font-size: 0.9rem;
-            text-align: left;
+            background: #fdfdfd; border: 1px solid #e9ecef; border-left: 4px solid var(--admin-color);
+            padding: 12px; border-radius: 4px; margin-bottom: 12px; font-size: 0.9rem; text-align: left;
         }
+        .msg-meta { font-size: 0.75rem; color: #868e96; margin-bottom: 5px; display: flex; justify-content: space-between; }
 
-        .msg-meta {
-            font-size: 0.75rem;
-            color: #868e96;
-            margin-bottom: 5px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        /* ページの表示切り替え用 */
-        .page {
-            display: none;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .page.active {
-            display: flex;
-        }
+        /* 表示切り替え */
+        .page { display: none; width: 100%; flex-direction: column; align-items: center; }
+        .page.active { display: flex; }
     </style>
 
     <script type="module">
@@ -427,7 +433,7 @@
 <body>
 
 <div class="top-bar">
-    <div class="site-logo" onclick="showPage('homePage')">🏠 ツムツム補正ツール</div>
+    <div class="site-logo" onclick="showPage('homePage')">🏠 ツムツム総合ツール</div>
     <button id="loginNavBtn" class="account-btn" onclick="openLoginModal()" title="管理者ログイン"></button>
 </div>
 
@@ -435,19 +441,23 @@
 
     <div id="homePage" class="page active">
         <div class="card home-card">
-            <h1>ツムツム コイン補正判定システム</h1>
+            <h1>ツムツム 総合ポータルシステム</h1>
             
             <div class="notice-board" id="userNoticeBoard" style="display: none;">
                 <div class="notice-title">📢 お知らせ</div>
                 <div id="userNoticeList">お知らせを読み込み中...</div>
             </div>
 
-            <p style="color: #6c757d; font-size: 0.95rem;">メニューを選んで選択してください。</p>
+            <p style="color: #6c757d; font-size: 0.95rem;">使いたい機能を選択してください。</p>
             
             <div class="menu-grid">
                 <button class="menu-btn" onclick="showPage('toolPage')">
-                    <span>📊 逆算ツール</span>
+                    <span>📊 補正逆算ツール</span>
                     <span class="menu-btn-desc">消去数から補正値を自動判定</span>
+                </button>
+                <button class="menu-btn" onclick="showPage('gachaPage')" style="border-color: var(--gacha-color); color: var(--gacha-color);">
+                    <span>🎰 ガチャ確率シミュ</span>
+                    <span class="menu-btn-desc">新ツム・セレクトの確率計算</span>
                 </button>
                 <button class="menu-btn" onclick="showPage('contactPage')">
                     <span>📩 ご意見ボックス</span>
@@ -472,6 +482,45 @@
         </div>
     </div>
 
+    <div id="gachaPage" class="page" style="display: none;">
+        <button class="back-btn" onclick="showPage('homePage')">← ホームへ戻る</button>
+        <div class="card">
+            <h1 style="color: var(--gacha-color); border-bottom-color: #f5eef8;">🎰 ガチャ確率シミュレーター</h1>
+            
+            <h3>📋 確率プリセット（タップで自動セット）</h3>
+            <div class="preset-container">
+                <button class="preset-btn" onclick="setGachaPreset(2.0, 'ペアツム / セットツム')">ペア/セット (2.0%)</button>
+                <button class="preset-btn" onclick="setGachaPreset(4.0, 'チャーム / 新ツム通常')">チャーム/新ツム (4.0%)</button>
+                <button class="preset-btn" onclick="setGachaPreset(6.0, '新ツム確率UP（高）')">新ツム通常高 (6.0%)</button>
+                <button class="preset-btn" onclick="setGachaPreset(8.33, '12種 セレクトボックス')">12種セレクト (8.3%)</button>
+                <button class="preset-btn" onclick="setGachaPreset(3.85, '26種 セレクトボックス')">26種セレクト (3.85%)</button>
+                <button class="preset-btn" onclick="setGachaPreset(6.66, 'ピックアップガチャ (1枠狙い)')">ピックアップ (6.6%)</button>
+            </div>
+
+            <div class="form-group">
+                <label>狙うツムの単体確率 (%):</label>
+                <input type="number" id="gachaPercent" step="0.01" min="0" max="100" value="2.00" oninput="calculateGachaProb()">
+                <small id="activePresetLabel" style="color: var(--gacha-color); font-weight: bold; font-size: 0.8rem; display:block; margin-top:4px;">選択中: ペアツム / セットツム</small>
+            </div>
+
+            <div class="form-group">
+                <label>ガチャを引く回数 (回):</label>
+                <input type="number" id="gachaCount" min="1" value="10" oninput="calculateGachaProb()">
+            </div>
+
+            <div class="result-container" style="background-color: #fcf8ff; border-color: #ebd6f5;">
+                <div class="result-label" style="color: #7d4699;">指定回数引いて1体以上当たる確率</div>
+                <span id="gachaResultValue" class="result-value" style="color: var(--gacha-color);">-</span>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <h3>🎲 運試しモード</h3>
+                <button class="submit-btn" style="background-color: var(--gacha-color);" onclick="runGachaSimulation()">実際にガチャを引いてみる</button>
+                <div id="simLogResult" style="font-size: 0.9rem; background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #ddd; display: none; text-align: left; max-height: 120px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="contactPage" class="page" style="display: none;">
         <button class="back-btn" onclick="showPage('homePage')">← ホームへ戻る</button>
         <div class="card">
@@ -493,7 +542,7 @@
             <form id="noticeForm" onsubmit="submitNotice(event)">
                 <div class="form-group">
                     <label>お知らせ内容:</label>
-                    <textarea id="noticeBody" required placeholder="例：新ツムのデータを反映しました！"></textarea>
+                    <textarea id="noticeBody" required placeholder="例：新ツムの確率シミュレータを実装しました！"></textarea>
                 </div>
                 <button type="submit" class="submit-btn" style="background-color: var(--admin-color);">お知らせを公開する</button>
             </form>
@@ -524,9 +573,10 @@
     function showPage(pageId) {
         document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
         document.getElementById(pageId).style.display = 'flex';
+        if (pageId === 'gachaPage') { calculateGachaProb(); }
     }
 
-    // --- 最前面ログイン画面（モーダル）の開閉 ---
+    // --- モーダル開閉 ---
     function openLoginModal() {
         if (window.fbAuth && window.fbAuth.currentUser) {
             if(confirm('ログアウトしますか？')) {
@@ -539,19 +589,13 @@
             document.getElementById('loginModal').style.display = 'flex';
         }
     }
-
     function closeLoginModal() {
         document.getElementById('loginModal').style.display = 'none';
         document.getElementById('loginForm').reset();
     }
+    function closeLoginModalOutside(e) { if (e.target.id === 'loginModal') closeLoginModal(); }
 
-    function closeLoginModalOutside(e) {
-        if (e.target.id === 'loginModal') {
-            closeLoginModal();
-        }
-    }
-
-    // --- 計算ツールのロジックデータ ---
+    // --- 📊 コイン補正判定ロジックデータ ---
     const correctionHeaders = ['なし','-1','-2','-3','-4','-5','-6','-7','-8','-9','-10','-11','+1','+2','+3','+4','+5','+6','+7','+8','+9','+10','+11','+12','+13','+14','+15','+16','+17','+18','+19','+20'];
     const rawTableData = {
         1:  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],2:  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],3:  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -605,7 +649,54 @@
         }
     }
 
-    // --- Firebase 認証・ログイン処理 ---
+    // --- 🎰 ガチャシミュレータ処理 ---
+    window.setGachaPreset = function(percent, label) {
+        document.getElementById('gachaPercent').value = percent.toFixed(2);
+        document.getElementById('activePresetLabel').innerText = "選択中: " + label;
+        calculateGachaProb();
+    }
+
+    window.calculateGachaProb = function() {
+        const p = parseFloat(document.getElementById('gachaPercent').value) / 100;
+        const n = parseInt(document.getElementById('gachaCount').value);
+        const resSpan = document.getElementById('gachaResultValue');
+
+        if (isNaN(p) || isNaN(n) || p <= 0 || n <= 0) { resSpan.innerText = "-"; return; }
+        
+        // 1回以上あたる確率の数式： 1 - (1 - p)^n
+        const prob = (1 - Math.pow(1 - p, n)) * 100;
+        resSpan.innerText = prob.toFixed(2) + " %";
+    }
+
+    window.runGachaSimulation = function() {
+        const p = parseFloat(document.getElementById('gachaPercent').value) / 100;
+        const logDiv = document.getElementById('simLogResult');
+        if (isNaN(p) || p <= 0) { alert('有効な確率を入力してください'); return; }
+
+        logDiv.style.display = 'block';
+        logDiv.innerHTML = "🔮 ガチャを引いています...<br>";
+
+        let count = 0;
+        let isHit = false;
+        let logText = "";
+
+        while (count < 100) {
+            count++;
+            if (Math.random() < p) {
+                isHit = true;
+                break;
+            }
+        }
+
+        if (isHit) {
+            logText = `🎉 <strong>成功！</strong><br>なんと <strong>${count}回目</strong> でターゲットツムを引き当てました！<br>(消費コイン: ${(count*30000).toLocaleString()} 枚)`;
+        } else {
+            logText = `💀 <strong>爆死...</strong><br>100回連続で引きましたが、当たりませんでした。<br>(消費コイン: 3,000,000 枚)`;
+        }
+        logDiv.innerHTML = logText;
+    }
+
+    // --- Firebase ログイン処理 ---
     window.handleLogin = function(e) {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
@@ -615,12 +706,9 @@
                 closeLoginModal();
                 showPage('adminPage');
             })
-            .catch(err => {
-                alert('ログイン失敗: ' + err.message);
-            });
+            .catch(err => { alert('ログイン失敗: ' + err.message); });
     }
 
-    // 状態のリアルタイム監視
     let unsubMessages = null;
     window.addEventListener('load', () => {
         ['inputX', 'coinBefore', 'coinAfter'].forEach(id => {
@@ -628,112 +716,80 @@
         });
         lookupCorrection();
 
-        // 📢 【全ユーザー共通】最新のお知らせを3件取得してホーム画面に表示
+        // 📢 お知らせのリアルタイム受信
         const nq = window.query(window.collection(window.fbDb, "notices"), window.orderBy("timestamp", "desc"), window.limit(3));
         window.onSnapshot(nq, (snapshot) => {
             const board = document.getElementById('userNoticeBoard');
             const listDiv = document.getElementById('userNoticeList');
-            if (snapshot.empty) {
-                board.style.display = 'none';
-                return;
-            }
+            if (snapshot.empty) { board.style.display = 'none'; return; }
             board.style.display = 'block';
             let html = '';
             snapshot.forEach(doc => {
                 const data = doc.data();
                 const date = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleDateString() : '';
-                html += `
-                    <div class="notice-item">
-                        <span>${escapeHtml(data.content)}</span><span class="notice-date">${date}</span>
-                    </div>
-                `;
+                html += `<div class="notice-item"><span>${escapeHtml(data.content)}</span><span class="notice-date">${date}</span></div>`;
             });
             listDiv.innerHTML = html;
         });
 
-        // 🔐 管理者ログイン状態の監視（常に監視し続ける）
+        // 🔐 管理者状態の監視
         window.fbAuth.onAuthStateChanged(user => {
             const loginNavBtn = document.getElementById('loginNavBtn');
             const homeAdminBtn = document.getElementById('homeAdminBtn');
-            
             if (user) {
                 loginNavBtn.style.borderColor = 'var(--admin-color)';
-                loginNavBtn.title = 'ログアウトする';
-                
-                // 🔐 ログイン中なら、ホーム画面の「管理ツール」ボタンを出現させる
                 if(homeAdminBtn) homeAdminBtn.style.display = 'flex';
-                
-                // メッセージ取得リスナーが未接続なら接続する
                 if (!unsubMessages) {
                     const q = window.query(window.collection(window.fbDb, "messages"), window.orderBy("timestamp", "desc"));
                     unsubMessages = window.onSnapshot(q, (snapshot) => {
                         const listDiv = document.getElementById('messageList');
-                        if (snapshot.empty) {
-                            listDiv.innerText = '届いているメッセージはありません。';
-                            return;
-                        }
+                        if (snapshot.empty) { listDiv.innerText = '届いているメッセージはありません。'; return; }
                         let html = '';
                         snapshot.forEach(doc => {
                             const data = doc.data();
                             const date = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : '送信中...';
                             html += `
                                 <div class="msg-item">
-                                    <div class="msg-meta"><span>👤 ${escapeHtml(data.name)} (${escapeHtml(data.email || 'メールなし')})</span><span>⏱ ${date}</span></div>
+                                    <div class="msg-meta"><span>👤 ${escapeHtml(data.name)}</span><span>⏱ ${date}</span></div>
                                     <div style="white-space:pre-wrap;">${escapeHtml(data.message)}</div>
-                                </div>
-                            `;
+                                </div>`;
                         });
                         listDiv.innerHTML = html;
                     });
                 }
             } else {
-                // ログアウト状態
                 loginNavBtn.style.borderColor = 'transparent';
-                loginNavBtn.title = '管理者ログイン';
-                
-                // 🔐 ログアウト中なら、ホーム画面の「管理ツール」ボタンを隠す
                 if(homeAdminBtn) homeAdminBtn.style.display = 'none';
-                
                 if (unsubMessages) { unsubMessages(); unsubMessages = null; }
             }
         });
     });
 
-    // 📩 ユーザーからのメッセージ送信処理
+    // メッセージ送信
     window.submitMessage = function(e) {
         e.preventDefault();
-        const name = document.getElementById('msgName').value;
-        const email = document.getElementById('msgEmail').value;
-        const message = document.getElementById('msgBody').value;
-
         window.addDoc(window.collection(window.fbDb, "messages"), {
-            name: name,
-            email: email,
-            message: message,
+            name: document.getElementById('msgName').value,
+            email: document.getElementById('msgEmail').value,
+            message: document.getElementById('msgBody').value,
             timestamp: new Date()
         }).then(() => {
-            alert('メッセージを送信しました！ありがとうございます。');
+            alert('メッセージを送信しました！');
             document.getElementById('contactForm').reset();
             showPage('homePage');
-        }).catch(err => {
-            alert('送信に失敗しました: ' + err.message);
-        });
+        }).catch(err => { alert('送信失敗: ' + err.message); });
     }
 
-    // 📢 【管理者専用】お知らせの投稿処理
+    // お知らせ投稿
     window.submitNotice = function(e) {
         e.preventDefault();
-        const content = document.getElementById('noticeBody').value;
-
         window.addDoc(window.collection(window.fbDb, "notices"), {
-            content: content,
+            content: document.getElementById('noticeBody').value,
             timestamp: new Date()
         }).then(() => {
             alert('お知らせを公開しました！');
             document.getElementById('noticeForm').reset();
-        }).catch(err => {
-            alert('お知らせの公開に失敗しました: ' + err.message);
-        });
+        }).catch(err => { alert('公開失敗: ' + err.message); });
     }
 
     function escapeHtml(str) {
