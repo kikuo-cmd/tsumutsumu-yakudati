@@ -15,6 +15,7 @@
             --focus-color: #4a90e2;
             --admin-color: #27ae60;
             --gacha-color: #9b59b6;
+            --search-color: #e67e22;
         }
 
         body {
@@ -252,7 +253,7 @@
             font-size: 0.9rem;
         }
 
-        input[type="number"], input[type="text"], input[type="email"], input[type="password"], textarea {
+        input[type="number"], input[type="text"], input[type="email"], input[type="password"], textarea, select {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--border-color);
@@ -264,13 +265,17 @@
             font-family: inherit;
         }
 
+        select {
+            cursor: pointer;
+        }
+
         textarea {
             font-size: 1rem;
             resize: vertical;
             min-height: 100px;
         }
 
-        input:focus, textarea:focus {
+        input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: var(--focus-color);
             background-color: #ffffff;
@@ -339,6 +344,35 @@
             margin-bottom: 10px;
         }
 
+        /* 🔍 検索ヒットツムのバッジ一覧スタイル */
+        .search-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 5px;
+        }
+        .search-tag {
+            background: #eee;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #666;
+        }
+        .tsum-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        .tsum-name {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.05rem;
+            margin-bottom: 4px;
+        }
+
         /* ポップアップモーダル */
         .modal-overlay {
             display: none;
@@ -386,13 +420,15 @@
         .admin-section {
             border: 2px solid var(--admin-color);
             max-width: 700px;
+            width: 100% !important;
         }
         .admin-title { color: var(--admin-color); border-bottom-color: #e2f4e9; }
         .msg-item {
             background: #fdfdfd; border: 1px solid #e9ecef; border-left: 4px solid var(--admin-color);
             padding: 12px; border-radius: 4px; margin-bottom: 12px; font-size: 0.9rem; text-align: left;
         }
-        .msg-meta { font-size: 0.75rem; color: #868e96; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .msg-meta { font-size: 0.75rem; color: #868e96; margin-bottom: 5px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px; }
+        .msg-email { color: var(--focus-color); font-size: 0.8rem; display: block; margin-bottom: 5px; }
 
         /* 表示切り替え */
         .page { display: none; width: 100%; flex-direction: column; align-items: center; }
@@ -459,6 +495,10 @@
                     <span>🎰 ガチャ確率シミュ</span>
                     <span class="menu-btn-desc">新ツム・セレクトの確率計算</span>
                 </button>
+                <button class="menu-btn" onclick="showPage('searchPage')" style="border-color: var(--search-color); color: var(--search-color);">
+                    <span>🔍 ツム特徴 検索ツール</span>
+                    <span class="menu-btn-desc">ミッションに合うツムを検索</span>
+                </button>
                 <button class="menu-btn" onclick="showPage('contactPage')">
                     <span>📩 ご意見ボックス</span>
                     <span class="menu-btn-desc">不具合報告や感想の送信</span>
@@ -521,6 +561,86 @@
         </div>
     </div>
 
+    <div id="searchPage" class="page" style="display: none;">
+        <button class="back-btn" onclick="showPage('homePage')">← ホームへ戻る</button>
+        <div class="card" style="max-width: 600px; width:100%;">
+            <h1 style="color: var(--search-color); border-bottom-color: #fbeee6;">🔍 ツム特徴 検索ツール</h1>
+            <p style="font-size:0.85rem; color:#6c757d; margin-top:-10px; margin-bottom:20px; text-align:center;">条件を選んで該当するツムを絞り込めます（複数選択OK）</p>
+
+            <div class="form-group">
+                <label>性別・見た目:</label>
+                <select id="searchGender" onchange="searchTsums()">
+                    <option value="">指定なし</option>
+                    <option value="男の子">男の子のツム</option>
+                    <option value="女の子">女の子のツム</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>ツムの色:</label>
+                <select id="searchColor" onchange="searchTsums()">
+                    <option value="">指定なし</option>
+                    <option value="黒">黒いツム</option>
+                    <option value="白">白いツム</option>
+                    <option value="赤">赤いツム</option>
+                    <option value="青">青いツム</option>
+                    <option value="黄色">黄色のツム</option>
+                    <option value="茶色">茶色いツム</option>
+                    <option value="ピンク">ピンクのツム</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>パーツ・特徴（耳・髪など）:</label>
+                <select id="searchFeature" onchange="searchTsums()">
+                    <option value="">指定なし</option>
+                    <option value="まゆ毛">まゆ毛のあるツム</option>
+                    <option value="まつ毛">まつ毛のあるツム</option>
+                    <option value="ほっぺが赤い">ほっぺが赤いツム</option>
+                    <option value="口が見える">口が見えるツム</option>
+                    <option value="鼻がピンク">鼻がピンクのツム</option>
+                    <option value="ツノ">ツノのあるツム</option>
+                    <option value="帽子">帽子をかぶったツム</option>
+                    <option value="リボン">リボンをつけたツム</option>
+                    <option value="耳が垂れた">耳が垂れたツム</option>
+                    <option value="耳が丸い">耳が丸いツム</option>
+                    <option value="耳が尖った">耳が尖ったツム</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>イニシャル:</label>
+                <select id="searchInitial" onchange="searchTsums()">
+                    <option value="">指定なし</option>
+                    <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                    <option value="D">D</option><option value="G">G</option><option value="J">J</option>
+                    <option value="M">M</option><option value="P">P</option><option value="R">R</option>
+                    <option value="S">S</option><option value="T">T</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>スキル効果など:</label>
+                <select id="searchSkill" onchange="searchTsums()">
+                    <option value="">指定なし</option>
+                    <option value="消去系">消去系スキル</option>
+                    <option value="ボム発生">ボムを発生させる</option>
+                    <option value="時間を止める">時間を止める</option>
+                    <option value="ツムを変化">ツムを変化させる</option>
+                </select>
+            </div>
+
+            <hr style="border:0; border-top:1px solid #dee2e6; margin:20px 0;">
+
+            <div style="text-align: left; font-weight: bold; margin-bottom: 10px;">
+                🎯 該当したツム (<span id="matchCount">0</span>件)
+            </div>
+            
+            <div id="tsumResultList" style="max-height: 300px; overflow-y: auto;">
+                </div>
+        </div>
+    </div>
+
     <div id="contactPage" class="page" style="display: none;">
         <button class="back-btn" onclick="showPage('homePage')">← ホームへ戻る</button>
         <div class="card">
@@ -549,8 +669,8 @@
         </div>
 
         <div class="card admin-section">
-            <h2 class="admin-title">📥 受信メッセージ一覧</h2>
-            <div id="messageList">メッセージを読み込み中...</div>
+            <h2 class="admin-title">📥 受信メッセージ一覧（全件）</h2>
+            <div id="messageList" style="max-height: 500px; overflow-y: auto; padding-right: 5px;">メッセージを読み込み中...</div>
         </div>
     </div>
 
@@ -574,6 +694,7 @@
         document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
         document.getElementById(pageId).style.display = 'flex';
         if (pageId === 'gachaPage') { calculateGachaProb(); }
+        if (pageId === 'searchPage') { searchTsums(); } // 検索画面を開いたときに初期化
     }
 
     // --- モーダル開閉 ---
@@ -615,7 +736,7 @@
         30: [198,172,149,129,109,93,77,61,45,29,28,27,225,252,279,306,333,360,387,414,441,468,495,522,549,576,603,630,657,684,711,738],31: [210,183,159,138,117,100,83,66,49,32,30,28,238,266,294,322,350,378,406,434,462,490,518,546,574,602,630,658,686,714,742,770],
         32: [222,194,169,147,125,107,89,71,53,35,32,29,251,280,309,338,367,396,425,454,483,512,541,570,599,628,657,686,715,744,773,802],33: [234,205,179,156,133,114,95,76,57,38,34,30,264,294,324,354,384,414,444,474,504,534,564,594,624,654,684,714,744,774,804,834],
         34: [246,216,189,165,141,121,101,81,61,41,36,31,277,308,339,370,401,432,463,494,525,556,587,618,649,680,711,742,773,804,835,866],35: [258,227,199,174,149,128,107,86,65,44,38,32,290,322,354,386,418,450,482,514,546,578,610,642,674,706,738,770,802,834,866,898],
-        36: [270,238,209,183,157,135,113,91,69,47,40,33,303,336,369,402,435,468,501,534,567,600,633,666,699,732,765,798,831,864,897,930],37: [282,249,219,192,165,142,119,96,73,50,42,34,316,350,384,418,452,486,520,554,588,622,656,690,724,758,792,826,860,894,928,962],
+        36: [270,238,209,183,157,135,113,91,69,47,40,33,303,336,369,402,435,468,501,534,567,600,633,666,699,732,765,798,831,864,897,930],37: [282,249,219,192,165,142,119,96,73,50,42,34,316,350,384,418,452,486,520,554,588,622,656,702,738,774,810,846,882,918,954,990,1026],
         38: [294,260,229,201,173,149,125,101,77,53,44,35,329,364,399,434,469,504,539,574,609,644,679,714,749,784,819,854,889,924,959,994],
         39: [306,271,239,210,181,156,131,106,81,56,46,36,342,378,414,450,486,522,558,594,630,666,702,738,774,810,846,882,918,954,990,1026],40: [318,282,249,219,189,163,137,111,85,59,48,37,355,392,429,466,503,540,577,614,651,688,725,762,799,836,873,910,947,984,1021,1058],
         41: [330,293,259,228,197,170,143,116,89,62,50,38,368,406,444,482,520,558,596,634,672,710,748,786,824,862,900,938,976,1014,1052,1090],42: [342,304,269,237,205,177,149,121,93,65,52,39,381,420,459,498,537,576,615,654,693,732,771,810,849,888,927,966,1005,1044,1083,1122],
@@ -663,7 +784,6 @@
 
         if (isNaN(p) || isNaN(n) || p <= 0 || n <= 0) { resSpan.innerText = "-"; return; }
         
-        // 1回以上あたる確率の数式： 1 - (1 - p)^n
         const prob = (1 - Math.pow(1 - p, n)) * 100;
         resSpan.innerText = prob.toFixed(2) + " %";
     }
@@ -696,6 +816,62 @@
         logDiv.innerHTML = logText;
     }
 
+    // --- 🔍 ツム特徴 検索データベース＆ロジック ---
+    // 主要なツムのデータを内蔵。ここを書き換えればデータはいくらでも増やせます！
+    const tsumDatabase = [
+        { name: "ミッキー", tags: ["男の子", "黒", "白", "丸い耳", "まゆ毛", "口が見える", "M", "消去系"] },
+        { name: "ミニー", tags: ["女の子", "黒", "白", "丸い耳", "まつ毛", "ほっぺが赤い", "リボン", "M", "ツムを変化"] },
+        { name: "ドナルド", tags: ["男の子", "白", "口が見える", "帽子", "D", "時間を止める"] },
+        { name: "デイジー", tags: ["女の子", "白", "まつ毛", "口が見える", "リボン", "ほっぺが赤い", "D", "ツムを変化"] },
+        { name: "プー", tags: ["男の子", "黄色", "丸い耳", "まゆ毛", "P", "時間を止める"] },
+        { name: "ピグレット", tags: ["男の子", "ピンク", "尖った耳", "まゆ毛", "P", "時間を止める"] },
+        { name: "スティッチ", tags: ["男の子", "青", "垂れた耳", "尖った耳", "口が見える", "S", "消去系"] },
+        { name: "マレフィセント", tags: ["女の子", "黒", "ツノ", "まつ毛", "ほっぺが赤い", "M", "消去系"] },
+        { name: "シンデレラ", tags: ["女の子", "黄色", "白", "まつ毛", "ほっぺが赤い", "髪を結んだ", "C", "ボム発生"] },
+        { name: "ガストン", tags: ["男の子", "黒", "茶色", "まゆ毛", "口が見える", "G", "ツムを変化"] },
+        { name: "エルサ", tags: ["女の子", "白", "まつ毛", "まゆ毛", "ほっぺが赤い", "E", "消去系"] },
+        { name: "アナ", tags: ["女の子", "茶色", "まつ毛", "まゆ毛", "ほっぺが赤い", "A", "ツムを変化"] },
+        { name: "野獣", tags: ["男の子", "茶色", "ツノ", "垂れた耳", "まゆ毛", "B", "消去系"] }
+    ];
+
+    window.searchTsums = function() {
+        const gender = document.getElementById('searchGender').value;
+        const color = document.getElementById('searchColor').value;
+        const feature = document.getElementById('searchFeature').value;
+        const initial = document.getElementById('searchInitial').value;
+        const skill = document.getElementById('searchSkill').value;
+
+        const resultList = document.getElementById('tsumResultList');
+        let matchedCount = 0;
+        let html = '';
+
+        tsumDatabase.forEach(tsum => {
+            // すべての選択条件を満たしているかチェック
+            if (gender && !tsum.tags.some(t => t.includes(gender))) return;
+            if (color && !tsum.tags.some(t => t === color)) return;
+            if (feature && !tsum.tags.some(t => t.includes(feature))) return;
+            if (initial && !tsum.tags.some(t => t === initial)) return;
+            if (skill && !tsum.tags.some(t => t.includes(skill))) return;
+
+            matchedCount++;
+            
+            // 特徴バッジを生成
+            let tagsHtml = tsum.tags.map(t => `<span class="search-tag">${t}</span>`).join('');
+            html += `
+                <div class="tsum-card">
+                    <div class="tsum-name">✨ ${escapeHtml(tsum.name)}</div>
+                    <div class="search-tags">${tagsHtml}</div>
+                </div>`;
+        });
+
+        document.getElementById('matchCount').innerText = matchedCount;
+        if (matchedCount === 0) {
+            resultList.innerHTML = '<p style="color:#868e96; text-align:center; font-size:0.9rem; padding: 20px;">条件に合うツムが見つかりませんでした。</p>';
+        } else {
+            resultList.innerHTML = html;
+        }
+    }
+
     // --- Firebase ログイン処理 ---
     window.handleLogin = function(e) {
         e.preventDefault();
@@ -716,7 +892,7 @@
         });
         lookupCorrection();
 
-        // 📢 お知らせのリアルタイム受信
+        // 📢 お知らせのリアルタイム受信（最新3件）
         const nq = window.query(window.collection(window.fbDb, "notices"), window.orderBy("timestamp", "desc"), window.limit(3));
         window.onSnapshot(nq, (snapshot) => {
             const board = document.getElementById('userNoticeBoard');
@@ -739,6 +915,7 @@
             if (user) {
                 loginNavBtn.style.borderColor = 'var(--admin-color)';
                 if(homeAdminBtn) homeAdminBtn.style.display = 'flex';
+                
                 if (!unsubMessages) {
                     const q = window.query(window.collection(window.fbDb, "messages"), window.orderBy("timestamp", "desc"));
                     unsubMessages = window.onSnapshot(q, (snapshot) => {
@@ -748,13 +925,18 @@
                         snapshot.forEach(doc => {
                             const data = doc.data();
                             const date = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : '送信中...';
+                            const emailHtml = data.email ? `<span class="msg-email">✉ ${escapeHtml(data.email)}</span>` : '';
                             html += `
                                 <div class="msg-item">
                                     <div class="msg-meta"><span>👤 ${escapeHtml(data.name)}</span><span>⏱ ${date}</span></div>
-                                    <div style="white-space:pre-wrap;">${escapeHtml(data.message)}</div>
+                                    ${emailHtml}
+                                    <div style="white-space:pre-wrap; margin-top:5px; background:#fff; padding:8px; border-radius:4px; border:1px solid #f0f0f0;">${escapeHtml(data.message)}</div>
                                 </div>`;
                         });
                         listDiv.innerHTML = html;
+                    }, (error) => {
+                        console.error("Firestore読み込みエラー:", error);
+                        document.getElementById('messageList').innerText = 'エラー：メッセージを読み込めませんでした。権限（ルール）を確認してください。';
                     });
                 }
             } else {
