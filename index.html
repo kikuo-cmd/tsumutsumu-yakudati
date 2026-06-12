@@ -423,10 +423,33 @@
             width: 100% !important;
         }
         .admin-title { color: var(--admin-color); border-bottom-color: #e2f4e9; }
-        .msg-item {
+        
+        .msg-item, .admin-notice-item {
             background: #fdfdfd; border: 1px solid #e9ecef; border-left: 4px solid var(--admin-color);
             padding: 12px; border-radius: 4px; margin-bottom: 12px; font-size: 0.9rem; text-align: left;
         }
+        .admin-notice-item {
+            border-left-color: var(--focus-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        .notice-delete-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .notice-delete-btn:hover {
+            background-color: #c92a2a;
+        }
+
         .msg-meta { font-size: 0.75rem; color: #868e96; margin-bottom: 5px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px; }
         .msg-email { color: var(--focus-color); font-size: 0.8rem; display: block; margin-bottom: 5px; }
 
@@ -438,7 +461,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, doc, deleteDoc, query, orderBy, onSnapshot, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyActHR3Vq4QmQdQdBVowlr0dn2Ls0GMCT0",
@@ -459,6 +482,8 @@
         window.signInUser = signInWithEmailAndPassword;
         window.signOutUser = signOut;
         window.addDoc = addDoc;
+        window.deleteDoc = deleteDoc;
+        window.doc = doc;
         window.collection = collection;
         window.query = query;
         window.orderBy = orderBy;
@@ -505,7 +530,7 @@
                 </button>
                 <button class="menu-btn admin-only-btn" id="homeAdminBtn" onclick="showPage('adminPage')" style="display: none;">
                     <span>🛠️ 管理ツール</span>
-                    <span class="menu-btn-desc">お知らせ投稿・お問合せ確認</span>
+                    <span class="menu-btn-desc">お知らせ管理・お問合せ確認</span>
                 </button>
             </div>
         </div>
@@ -666,6 +691,9 @@
                 </div>
                 <button type="submit" class="submit-btn" style="background-color: var(--admin-color);">お知らせを公開する</button>
             </form>
+            
+            <h3 style="color: var(--admin-color); font-weight: bold;">📋 投稿済みのお知らせ管理</h3>
+            <div id="adminNoticeList" style="max-height: 200px; overflow-y: auto; background: #fafafa; padding: 10px; border-radius: 6px; border: 1px solid #eee;">お知らせ一覧を読み込み中...</div>
         </div>
 
         <div class="card admin-section">
@@ -976,13 +1004,15 @@
     }
 
     let unsubMessages = null;
+    let unsubAdminNotices = null;
+
     window.addEventListener('load', () => {
         ['inputX', 'coinBefore', 'coinAfter'].forEach(id => {
             document.getElementById(id).addEventListener('input', lookupCorrection);
         });
         lookupCorrection();
 
-        // 📢 お知らせのリアルタイム受信（最新3件）
+        // 📢 お知らせのリアルタイム受信（最新3件・ユーザー用）
         const nq = window.query(window.collection(window.fbDb, "notices"), window.orderBy("timestamp", "desc"), window.limit(3));
         window.onSnapshot(nq, (snapshot) => {
             const board = document.getElementById('userNoticeBoard');
@@ -1006,6 +1036,7 @@
                 loginNavBtn.style.borderColor = 'var(--admin-color)';
                 if(homeAdminBtn) homeAdminBtn.style.display = 'flex';
                 
+                // メッセージのリスナー接続
                 if (!unsubMessages) {
                     const q = window.query(window.collection(window.fbDb, "messages"), window.orderBy("timestamp", "desc"));
                     unsubMessages = window.onSnapshot(q, (snapshot) => {
@@ -1026,13 +1057,38 @@
                         listDiv.innerHTML = html;
                     }, (error) => {
                         console.error("Firestore読み込みエラー:", error);
-                        document.getElementById('messageList').innerText = 'エラー：メッセージを読み込めませんでした。権限（ルール）を確認してください。';
+                        document.getElementById('messageList').innerText = 'エラー：メッセージを読み込めませんでした。';
                     });
                 }
+
+                // 🛠️ 管理者画面用：お知らせ管理一覧のリスナー接続
+                if (!unsubAdminNotices) {
+                    const adminNoticeQuery = window.query(window.collection(window.fbDb, "notices"), window.orderBy("timestamp", "desc"));
+                    unsubAdminNotices = window.onSnapshot(adminNoticeQuery, (snapshot) => {
+                        const adminListDiv = document.getElementById('adminNoticeList');
+                        if (snapshot.empty) { adminListDiv.innerText = '投稿されたお知らせはありません。'; return; }
+                        let html = '';
+                        snapshot.forEach(docSnap => {
+                            const data = docSnap.data();
+                            const date = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleDateString() : '';
+                            html += `
+                                <div class="admin-notice-item">
+                                    <div style="flex:1;">
+                                        <span style="font-size:0.75rem; color:#868e96; display:block; margin-bottom:3px;">⏱ ${date}</span>
+                                        <div>${escapeHtml(data.content)}</div>
+                                    </div>
+                                    <button class="notice-delete-btn" onclick="deleteNotice('${docSnap.id}')">削除</button>
+                                </div>`;
+                        });
+                        adminListDiv.innerHTML = html;
+                    });
+                }
+
             } else {
                 loginNavBtn.style.borderColor = 'transparent';
                 if(homeAdminBtn) homeAdminBtn.style.display = 'none';
                 if (unsubMessages) { unsubMessages(); unsubMessages = null; }
+                if (unsubAdminNotices) { unsubAdminNotices(); unsubAdminNotices = null; }
             }
         });
     });
@@ -1062,6 +1118,20 @@
             alert('お知らせを公開しました！');
             document.getElementById('noticeForm').reset();
         }).catch(err => { alert('公開失敗: ' + err.message); });
+    }
+
+    // 🗑️ お知らせ削除処理
+    window.deleteNotice = function(noticeId) {
+        if (!confirm('このお知らせを完全に削除してもよろしいですか？')) return;
+        
+        const docRef = window.doc(window.fbDb, "notices", noticeId);
+        window.deleteDoc(docRef)
+            .then(() => {
+                alert('お知らせを削除しました。');
+            })
+            .catch(err => {
+                alert('削除に失敗しました: ' + err.message);
+            });
     }
 
     function escapeHtml(str) {
